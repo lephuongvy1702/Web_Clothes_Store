@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cai_Tiem_Ban_Do</title>
+    <style>
+        :root {
+            --primary-color: #111;
+            --accent-color: #ff3f6c;
+            --bg-color: #f5f5f7;
+            --text-color: #333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); }
+
+        /* Navbar */
+        header { background: #fff; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 20px; }
+        .logo { font-size: 24px; font-weight: bold; letter-spacing: 2px; cursor: pointer; }
+        nav ul { display: flex; list-style: none; gap: 25px; }
+        nav ul li { cursor: pointer; font-weight: 600; transition: 0.3s; }
+        nav ul li:hover { color: var(--accent-color); }
+        .cart-icon-wrap { position: relative; }
+        #cart-count { position: absolute; top: -10px; right: -10px; background: var(--accent-color); color: #fff; font-size: 12px; padding: 2px 6px; border-radius: 50%; }
+
+        /* Khung nội dung */
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; min-height: 70vh; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Trang chủ & Sản phẩm */
+        .banner { background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200') center/cover; height: 300px; display: flex; align-items: center; justify-content: center; color: #fff; border-radius: 12px; margin-bottom: 40px; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px; }
+        .product-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); }
+        .product-img { width: 100%; height: 280px; object-fit: cover; background: #eee; }
+        .product-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-title { font-size: 16px; margin-bottom: 8px; }
+        .product-price { color: var(--accent-color); font-weight: bold; margin-bottom: 15px; }
+        
+        
+        .product-actions { 
+            display: flex; 
+            gap: 10px; 
+            width: 100%; 
+        }
+
+        .btn-add-cart { 
+            width: 150px;          
+            height: 42px;           
+            background: var(--primary-color); 
+            color: #fff; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 15px;         
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+        .btn-add-cart:hover { background: #444; }
+
+        .btn-view-detail {
+            flex: 1;
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none; 
+            text-align: center;
+            transition: 0.3s;
+        }
+        .btn-view-detail:hover {
+            background: #e0e0e0;
+        }
+
+        /* Trang Chi Tiết Sản Phẩm */
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .detail-img { width: 100%; max-height: 550px; object-fit: cover; border-radius: 8px; }
+        .detail-info { display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; }
+        .detail-title { font-size: 28px; font-weight: bold; margin-bottom: 15px; }
+        .detail-price { font-size: 24px; color: var(--accent-color); font-weight: bold; margin-bottom: 25px; }
+        .detail-desc-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .detail-desc { font-size: 16px; line-height: 1.6; color: #666; margin-bottom: 30px; }
+        .btn-back { background: none; border: none; color: #777; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px; margin-bottom: 20px; font-size: 16px; transition: 0.2s; }
+        .btn-back:hover { color: var(--accent-color); }
+
+        /* Giỏ hàng */
+        .cart-item { display: flex; align-items: center; background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; justify-content: space-between; }
+        .cart-item img { width: 80px; height: 100px; object-fit: cover; border-radius: 4px; }
+        .cart-summary { background: #fff; padding: 20px; border-radius: 8px; text-align: right; margin-top: 20px; }
+        .btn-checkout { background: var(--accent-color); color: #fff; border: none; padding: 12px 30px; font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 15px; }
+
+        /* Form Thanh toán & Cá nhân */
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        .flex-box { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        .box-white { background: #fff; padding: 30px; border-radius: 8px; }
+
+        footer { background: #111; color: #fff; text-align: center; padding: 20px; margin-top: 60px; }
+    </style>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5N3JHP4P');</script>
+    <!-- End Google Tag Manager -->
+
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5N3JHP4P"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+     
+    <!-- THANH ĐIỀU HƯỚNG -->
+    <header>
+        <div class="nav-container">
+            <div class="logo" onclick="switchPage('home')">CÁI TIỆM BÁN ĐỒ</div>
+            <nav>
+                <ul>
+                    <li onclick="switchPage('home')">Trang Chủ</li>
+                    <li onclick="switchPage('profile')">Tài Khoản</li>
+                    <li onclick="switchPage('cart')" class="cart-icon-wrap">
+                        Giỏ Hàng <span id="cart-count">0</span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- TRANG CHỦ -->
+        <div id="home" class="page active">
+            <div class="banner">
+                <h1>NEW COLLECTION 2026</h1>
+            </div>
+            <h2>Sản Phẩm Nổi Bật</h2>
+            <br>
+            <div class="products-grid" id="products-container"></div>
+        </div>
+
+        <!-- TRANG CHI TIẾT SẢN PHẨM -->
+        <div id="product-detail" class="page">
+            <button class="btn-back" onclick="switchPage('home')">← Quay lại trang chủ</button>
+            <div class="detail-grid" id="detail-container"></div>
+        </div>
+
+        <!-- TRANG CHÍNH SÁCH ĐỔI TRẢ -->
+        <div id="return-policy-page" class="page">
+            <button class="btn-back" onclick="switchPage('home')">← Quay lại trang chủ</button>
+            <div class="detail-grid" id="policy-container"></div>
+        </div>
+
+        <!-- TRANG GIỎ HÀNG -->
+        <div id="cart" class="page">
+            <h2>Giỏ Hàng Của Bạn</h2>
+            <br>
+            <div id="cart-items-container"></div>
+            <div class="cart-summary" id="cart-summary-box">
+                <h3>Tổng cộng: <span id="cart-total">0đ</span></h3>
+                <button class="btn-checkout" onclick="switchPage('checkout')">Tiến Hành Thanh Toán</button>
+            </div>
+        </div>
+
+        <!-- TRANG THANH TOÁN -->
+        <div id="checkout" class="page">
+            <h2>Thông Tin Thanh Toán</h2>
+            <br>
+            <div class="flex-box">
+                <div class="box-white">
+                    <form id="checkout-form" onsubmit="handlePlaceOrder(event)">
+                        <div class="form-group">
+                            <label>Họ và Tên</label>
+                            <input type="text" required placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="form-group">
+                            <label>Số Điện Thoại</label>
+                            <input type="tel" required placeholder="0901234567">
+                        </div>
+                        <div class="form-group">
+                            <label>Địa Chỉ Nhận Hàng</label>
+                            <textarea rows="3" required placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố"></textarea>
+                        </div>
+                        <button type="submit" class="btn-checkout" style="width: 100%;">Xác Nhận Đặt Hàng</button>
+                    </form>
+                </div>
+                <div class="box-white">
+                    <h3>Đơn hàng của bạn</h3>
+                    <hr style="margin: 15px 0; border: 0.5px solid #eee;">
+                    <div id="checkout-preview"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANG CÁ NHÂN -->
+        <div id="profile" class="page">
+            <h2>Trang Cá Nhân</h2>
+            <br>
+            <div class="box-white" style="max-width: 500px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                    <h3 style="margin-top: 10px;">Nguyễn Văn A</h3>
+                    <p style="color: #777;">nguyenvana@gmail.com</p>
+                </div>
+                <hr style="margin: 15px 0; border: 0.5px solid #eee;">
+                <h4>Lịch sử mua hàng</h4>
+                <p style="color: #999; margin-top: 10px;" id="order-history">Chưa có đơn hàng nào được đặt.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Cái Tiệm Bán Đồ.</p>
+        <button class="btn-add-cart" style="width: auto; padding: 8px 15px;" onclick="showReturnPolicy()">
+        Chính sách đổi trả
+        </button>
+    </footer>
+
+    <script>
+        const products = [
+            { id: 1, name: "Áo Blazer Oversize Hàn Quốc", price: 650000, img: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400", desc: "Áo blazer dáng rộng phong cách trẻ trung lịch lãm, chất vải mềm mịn, đứng form chuẩn phong cách Seoul." },
+            { id: 2, name: "Áo Thun Cotton", price: 250000, img: "https://product.hstatic.net/1000096703/product/1_4d10c2422dbb4f9bae5dae6a519828e4_master.jpg", desc: "Chất liệu 100% cotton co giãn 4 chiều, thấm hút mồ hôi cực tốt mang lại cảm giác dễ chịu suốt ngày dài." },
+            { id: 3, name: "Quần Jeans Ống Rộng Vintage", price: 450000, img: "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcT6MuxBjdSLBmnnPXGZZAozJDKgS9V_WtMSBgWeZfknw5Myz3-ePoO6GLUpwiLZyJcYiyzbuA9P36x2Etn1Y3WjmZC-p9s_34hRZ0X0l5-9QYc9impqDXLc8QxZEjbY0NYayWptRGiayw&usqp=CAc", desc: "Form dáng suông rộng thời thượng cá tính, chất liệu vải jean dày dặn chuẩn vintage bụi bặm." },
+            { id: 4, name: "Váy Lụa Dự Tiệc Elegant", price: 890000, img: "https://www.dreamdresses.com/cdn/shop/files/24_aa821672-cfdb-40f7-aa79-04dfdd731785.png?v=1737016785&width=1920", desc: "Chất lụa cao cấp bóng nhẹ mềm mại, thiết kế ôm dáng nhẹ nhàng giúp tôn vinh đường cong quyến rũ." },
+            { id: 5, name: "Áo Hoodie Nỉ", price: 390000, img: "https://lados.vn/wp-content/uploads/2025/10/1-ao-khoac-ni-mau-den-ld2133.jpg", desc: "Vải nỉ lót bông siêu ấm áp, form basic năng động phù hợp cho những ngày thời tiết se lạnh." },
+            { id: 6, name: "Quần Tây Lịch Lãm", price: 290000, img: "https://bizweb.dktcdn.net/100/524/840/products/dp25fh09p-nmsc-blue-3-f4f3cd88de9f41b1ab301c3e5c1ab472.jpg?v=1762308018023", desc: "Kiểu dáng âu thanh lịch, thích hợp mặc đi học, đi làm công sở phối cùng áo sơ mi rất tôn dáng." },
+            { id: 7, name: "Áo Sơ Mi Linen", price: 350000, img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400", desc: "Chất vải linen tự nhiên nhẹ, thoáng khí tối đa, mang phong cách mộc mạc mà sang trọng." },
+            { id: 8, name: "Áo Khoác Da", price: 720000, img: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400", desc: "Chất da PU cao cấp chống nước nhẹ, khóa kéo mượt mà đem lại phong thái cực ngầu và cá tính." },
+            { id: 9, name: "Chân Váy Xếp Ly Dáng Dài", price: 320000, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4V5gw-vVZrg51YHmHuGSAs4D7ZAWaHjEMvkPbVO5tg&s=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_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", desc: "Vết dập ly tinh tế tạo độ bồng xòe tự nhiên, chiều dài thướt tha thích hợp diện vào các dịp dạo phố." },
+            { id: 10, name: "Áo Len Dệt Kim Thu Đông", price: 480000, img: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400", desc: "Những sợi len dệt đan khít mềm mại giữ ấm hoàn hảo, màu sắc trang nhã dễ dàng mix & match." }
+        ];
+
+        let cart = [];
+        let orderHistory = [];
+
+        window.dataLayer = window.dataLayer || [];
+
+        function formatMoney(amount) {
+            return amount.toLocaleString('vi-VN') + 'đ';
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0,0);
+            
+            if(pageId === 'cart') {
+                renderCart();
+                pushCartEvent('view_cart');
+            }
+            
+            if(pageId === 'checkout') {
+                renderCheckoutPreview();
+                pushCartEvent('begin_checkout');
+            }
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = products.map(prod => `
+                <div class="product-card">
+                    <img src="${prod.img}" class="product-img" alt="${prod.name}">
+                    <div class="product-info">
+                        <div>
+                            <h3 class="product-title">${prod.name}</h3>
+                            <p class="product-price">${formatMoney(prod.price)}</p>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn-add-cart" onclick="addToCart(${prod.id})">Thêm Vào Giỏ Hàng</button>
+                            <button class="btn-view-detail" onclick="showDetail(${prod.id})">Chi Tiết</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Mở popup Xem chi tiết sản phẩm (Modal)
+        function showDetail(productId) {
+            const prod = products.find(p => p.id == productId); 
+            if(!prod) return;
+
+            window.dataLayer.push({ 'ecommerce': null }); 
+            window.dataLayer.push({
+                'event': 'custom_view_item',
+                'ecommerce': {
+                    'currency': 'VND',
+                    'value': prod.price,
+                    'items': [{
+                        'item_id': String(prod.id),
+                        'item_name': prod.name,
+                        'price': prod.price,
+                        'quantity': 1
+                    }]
+                }
+            });
+
+            const detailContainer = document.getElementById('detail-container');
+            detailContainer.innerHTML = `
+                <div>
+                    <img src="${prod.img}" class="detail-img" alt="${prod.name}">
+                </div>
+                <div class="detail-info">
+                    <h2 class="detail-title">${prod.name}</h2>
+                    <p class="detail-price">${formatMoney(prod.price)}</p>
+                    <h3 class="detail-desc-title">Mô tả sản phẩm</h3>
+                    <p class="detail-desc">${prod.desc}</p>
+                    <button class="btn-add-cart" style="width: 180px; padding: 10px 0; margin-top: 200px; font-size: 15px; " onclick="addToCart(${prod.id})">Thêm Vào Giỏ Hàng</button>
+                </div>
+            `;
+            switchPage('product-detail');
+        }
+
+        // Thêm vào giỏ hàng
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const cartItem = cart.find(item => item.id === productId);
+            if(cartItem) {
+                cartItem.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            window.dataLayer.push({ 'ecommerce': null });
+            window.dataLayer.push({
+                'event': 'custom_add_to_cart',
+                'ecommerce': {
+                    'currency': 'VND',
+                    'value': product.price,
+                    'items': [{
+                        'item_id': String(product.id),
+                        'item_name': product.name,
+                        'price': product.price,
+                        'quantity': 1
+                    }]
+                }
+            });
+            updateCartCount();
+            alert(`Đã thêm "${product.name}" vào giỏ hàng!`);
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').innerText = count;
+        }
+
+        // Hiển thị trang Giỏ hàng
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const summaryBox = document.getElementById('cart-summary-box');
+
+            if(cart.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#888;'>Giỏ hàng của bạn đang trống.</p>";
+                summaryBox.style.display = 'none';
+                return;
+            }
+
+            summaryBox.style.display = 'block';
+            container.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div style="display:flex; align-items:center; gap:20px;">
+                        <img src="${item.img}">
+                        <div>
+                            <h4>${item.name}</h4>
+                            <p style="color:var(--accent-color); font-weight:bold; margin-top:5px;">${formatMoney(item.price)}</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <button style="padding:5px 10px;" onclick="changeQty(${item.id}, -1)">-</button>
+                        <span>${item.quantity}</span>
+                        <button style="padding:5px 10px;" onclick="changeQty(${item.id}, 1)">+</button>
+                        <button style="color:red; background:none; border:none; margin-left:15px; cursor:pointer;" onclick="removeFromCart(${item.id})">Xóa</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('cart-total').innerText = formatMoney(total);
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if(item) {
+                item.quantity += delta;
+                if(item.quantity <= 0) removeFromCart(id);
+                else { renderCart(); updateCartCount(); }
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            renderCart();
+            updateCartCount();
+        }
+
+        function renderCheckoutPreview() {
+            const preview = document.getElementById('checkout-preview');
+            if(cart.length === 0) {
+                preview.innerHTML = "<p>Không có sản phẩm để thanh toán.</p>";
+                return;
+            }
+            let html = cart.map(item => `<p style="display:flex; justify-content:between; margin-bottom:10px;"><span>${item.name} (x${item.quantity})</span> <strong style="margin-left:auto">${formatMoney(item.price * item.quantity)}</strong></p>`).join('');
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            html += `<hr style="margin:15px 0; border: 0.5px solid #eee;"><h3 style="display:flex; justify-content:between;"><span>Tổng tiền:</span> <span style="margin-left:auto; color:var(--accent-color)">${formatMoney(total)}</span></h3>`;
+            preview.innerHTML = html;
+        }
+
+        // Xử lý khi bấm nút "Đặt hàng"
+        function handlePlaceOrder(event) {
+            event.preventDefault();
+            if(cart.length === 0) {
+                alert("Giỏ hàng trống, không thể đặt hàng!");
+                return;
+            }
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const transactionId = "CTDD-" + Math.floor(Math.random() * 10000);
+
+            window.dataLayer.push({ 'ecommerce': null });
+            window.dataLayer.push({
+                'event': 'custom_purchase',
+                'ecommerce': {
+                    'transaction_id': transactionId,
+                    'value': total,
+                    'currency': 'VND',
+                    'items': cart.map(item => ({
+                        'item_id': String(item.id),
+                        'item_name': item.name,
+                        'price': item.price,
+                        'quantity': item.quantity
+                    }))
+                }
+            });
+            // Lưu vào lịch sử mua hàng
+            document.getElementById('order-history').innerHTML = `
+                <div style="border: 1px solid #ddd; padding: 10px; border-radius: 4px; background:#fafafa;">
+                    <p><strong>Mã đơn hàng:</strong> #CTDD-${Math.floor(Math.random() * 10000)}</p>
+                    <p><strong>Tổng tiền:</strong> ${formatMoney(total)}</p>
+                    <p><strong>Trạng thái:</strong> Đang chuẩn bị hàng</p>
+                </div>
+            `;
+            
+            alert("Đặt Hàng Thành Công");
+            cart = [];
+            updateCartCount();
+            document.getElementById('checkout-form').reset();
+            switchPage('profile');
+        }
+        function pushCartEvent(eventName) {
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            window.dataLayer.push({ 'ecommerce': null });
+            window.dataLayer.push({
+                'event': 'custom_' + eventName,
+                'ecommerce': {
+                    'currency': 'VND',
+                    'value': total,
+                    'items': cart.map(item => ({
+                        'item_id': String(item.id),
+                        'item_name': item.name,
+                        'price': item.price,
+                        'quantity': item.quantity
+                    }))
+                }
+            });
+        }
+        
+        function showReturnPolicy() {
+            window.dataLayer.push({ 'ecommerce': null }); 
+            window.dataLayer.push({
+                'event': 'custom_view_return_policy',
+                'policy_type': 'warranty_and_return',
+                'click_location': 'footer'
+            });
+
+            const policyContainer = document.getElementById('policy-container');
+            if (policyContainer) {
+                policyContainer.innerHTML = `
+                    <div class="detail-info" style="grid-column: span 2; padding: 20px;">
+                        <h2 class="detail-title">Chính Sách Đổi Trả & Bảo Hành</h2>
+                        <h3 class="detail-desc-title" style="margin-top: 15px;">1. Điều kiện đổi trả</h3>
+                        <p class="detail-desc">- Sản phẩm còn nguyên tem, mác và chưa qua sử dụng.</p>
+                        <p class="detail-desc">- Hỗ trợ đổi trả trong vòng 7 ngày kể từ khi nhận hàng.</p>
+                        <h3 class="detail-desc-title" style="margin-top: 15px;">2. Quy trình xử lý</h3>
+                        <p class="detail-desc">- Liên hệ bộ phận CSKH để xác nhận thông tin đơn hàng và lý do đổi trả.</p>
+                    </div>
+                `;
+            }
+
+            switchPage('return-policy-page');
+        }
+
+        renderProducts();
+    </script>
+</body>
+</html>
